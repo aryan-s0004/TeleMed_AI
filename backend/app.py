@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify, session
 from flask_cors import CORS
 from flask_socketio import SocketIO, emit, join_room, leave_room
+from flask_mail import Mail, Message
 import sqlite3, hashlib, os, random, string
 from datetime import datetime, timedelta
 from ml_model import predict_disease
@@ -10,11 +11,19 @@ app.secret_key = os.environ.get("SECRET_KEY", "telemedicine_secret_2024")
 CORS(app, supports_credentials=True, origins=["http://localhost:3000", os.environ.get("FRONTEND_URL", "*")])
 socketio = SocketIO(app, cors_allowed_origins="*", async_mode="threading")
 
-DB = "database/telemedicine.db"
+# ── Email Config ──────────────────────────────────────
+app.config["MAIL_SERVER"]         = "smtp.gmail.com"
+app.config["MAIL_PORT"]           = 587
+app.config["MAIL_USE_TLS"]        = True
+app.config["MAIL_USERNAME"]       = os.environ.get("MAIL_USERNAME", "suryansh.unofficial08@gmail.com")
+app.config["MAIL_PASSWORD"] = os.environ.get("MAIL_PASSWORD", "ttfjngsnnncbjobc")
+app.config["MAIL_DEFAULT_SENDER"] = os.environ.get("MAIL_USERNAME", "suryansh.unofficial08@gmail.com")
+mail = Mail(app)
 
-# ── Auto Initialize Database ──────────────────────────
-os.makedirs("database", exist_ok=True)
+DB = "database/telemedicine.db"
+import os
 if not os.path.exists(DB):
+    os.makedirs("database", exist_ok=True)
     conn = sqlite3.connect(DB)
     c = conn.cursor()
     c.executescript("""
@@ -47,6 +56,7 @@ if not os.path.exists(DB):
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
     """)
+    import hashlib
     doctors = [
         ("Dr. Priya Sharma", "priya@clinic.com",  hashlib.sha256("doctor123".encode()).hexdigest(), "doctor", "General Physician"),
         ("Dr. Arjun Mehta",  "arjun@clinic.com",  hashlib.sha256("doctor123".encode()).hexdigest(), "doctor", "Cardiologist"),
@@ -60,6 +70,7 @@ if not os.path.exists(DB):
     conn.commit()
     conn.close()
     print("✅ Database auto-initialized!")
+os.makedirs("database", exist_ok=True)
 
 otp_store = {}
 
@@ -72,13 +83,10 @@ def get_db():
 def generate_otp():
     return ''.join(random.choices(string.digits, k=6))
 
-# ── Send Email via SendGrid ───────────────────────────
 def send_otp_email(email, otp, name, subject="Email Verification", color="#4f46e5", title="Email Verification", msg_text="complete your registration"):
     try:
-        import sendgrid
-        from sendgrid.helpers.mail import Mail
-
-        html = f"""
+        msg = Message(subject=f"TeleMed AI — {subject}", recipients=[email])
+        msg.html = f"""
         <div style="font-family:Arial,sans-serif;max-width:500px;margin:0 auto;padding:30px;border:1px solid #e2e8f0;border-radius:12px;">
             <h2 style="color:#4f46e5;">💊 TeleMed AI</h2>
             <h3>{title}</h3>
@@ -91,15 +99,7 @@ def send_otp_email(email, otp, name, subject="Email Verification", color="#4f46e
             <hr style="border:none;border-top:1px solid #e2e8f0;margin:20px 0;">
             <p style="color:#94a3b8;font-size:12px;">TeleMed AI — AI-Powered Telemedicine Platform</p>
         </div>"""
-
-        sg = sendgrid.SendGridAPIClient(api_key=os.environ.get("SENDGRID_API_KEY"))
-        message = Mail(
-            from_email=os.environ.get("MAIL_USERNAME", "suryansh.unofficial08@gmail.com"),
-            to_emails=email,
-            subject=f"TeleMed AI — {subject}",
-            html_content=html
-        )
-        sg.send(message)
+        mail.send(msg)
         return True
     except Exception as e:
         print(f"Email error: {e}")
@@ -120,7 +120,7 @@ def send_otp():
     otp_store[email] = {"otp": otp, "expires_at": datetime.now() + timedelta(minutes=10), "user_data": data}
     if send_otp_email(email, otp, name):
         return jsonify({"message": f"Verification code sent to {email}"}), 200
-    return jsonify({"error": "Failed to send email. Check config."}), 500
+    return jsonify({"error": "Failed to send email. Check Gmail config."}), 500
 
 # ── Register: Verify OTP ──────────────────────────────
 @app.route("/api/verify-otp", methods=["POST"])
