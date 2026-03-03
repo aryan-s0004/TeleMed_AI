@@ -1,7 +1,6 @@
 from flask import Flask, request, jsonify, session
 from flask_cors import CORS
 from flask_socketio import SocketIO, emit, join_room, leave_room
-from flask_mail import Mail, Message
 import sqlite3, hashlib, os, random, string
 from datetime import datetime, timedelta
 from ml_model import predict_disease
@@ -18,7 +17,7 @@ app.config["MAIL_USE_TLS"]        = True
 app.config["MAIL_USERNAME"]       = os.environ.get("MAIL_USERNAME", "suryansh.unofficial08@gmail.com")
 app.config["MAIL_PASSWORD"] = os.environ.get("MAIL_PASSWORD", "ttfjngsnnncbjobc")
 app.config["MAIL_DEFAULT_SENDER"] = os.environ.get("MAIL_USERNAME", "suryansh.unofficial08@gmail.com")
-mail = Mail(app)
+
 
 DB = "database/telemedicine.db"
 import os
