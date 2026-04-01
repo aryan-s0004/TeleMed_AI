@@ -427,7 +427,7 @@ export default function MedicalRecords({ user }) {
                   <div className="mr-doc-header">
                     <div>
                       <p className="mr-doc-clinic">💊 TeleMed AI</p>
-                      <p className="mr-doc-tagline">AI-Powered Telemedicine Platform • Chandigarh University</p>
+                      <p className="mr-doc-tagline">AI-powered telemedicine workspace for modern virtual care</p>
                     </div>
                     <div className="mr-doc-rx">Rx</div>
                   </div>
@@ -547,3 +547,4 @@ export default function MedicalRecords({ user }) {
     </div>
   );
 }
+

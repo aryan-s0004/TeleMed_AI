@@ -163,7 +163,7 @@ export default function CallHistory({ user }) {
 
   const fetchCalls = () => {
     setLoading(true);
-    fetch(`${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api/calls/${user.id}?role=${user.role}`, { credentials:"include" })
+    fetch(`${API}/api/calls/${user.id}?role=${user.role}`, { credentials:"include" })
       .then(r => r.json())
       .then(d => { setCalls(Array.isArray(d) ? d : []); setLoading(false); })
       .catch(() => setLoading(false));
@@ -172,7 +172,7 @@ export default function CallHistory({ user }) {
   const deleteOne = async (callId) => {
     setDeleting(true);
     try {
-      await fetch(`${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api/calls/${callId}`, { method:"DELETE", credentials:"include" });
+      await fetch(`${API}/api/calls/${callId}`, { method:"DELETE", credentials:"include" });
       setCalls(prev => prev.filter(c => c.id !== callId));
     } catch {}
     setDeleting(false);
@@ -182,7 +182,7 @@ export default function CallHistory({ user }) {
   const deleteAll = async () => {
     setDeleting(true);
     try {
-      await fetch(`${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api/calls/clear/${user.id}?role=${user.role}`, { method:"DELETE", credentials:"include" });
+      await fetch(`${API}/api/calls/clear/${user.id}?role=${user.role}`, { method:"DELETE", credentials:"include" });
       setCalls([]);
     } catch {}
     setDeleting(false);

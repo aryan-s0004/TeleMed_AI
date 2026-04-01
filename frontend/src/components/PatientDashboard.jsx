@@ -260,7 +260,7 @@ export default function PatientDashboard({ user, setPage }) {
       cls: "pd-card-hist", icon: "📞", iconBg: "linear-gradient(135deg,#fce7f3,#fbcfe8)",
       title: "Call History", desc: "Review past video consultations, durations and session notes.",
       badge: { text: `${stats.calls} Sessions`, cls: "pd-badge-pink" },
-      cta: "View history", page: "callhistory",
+      cta: "View history", page: "calls",
     },
   ];
 

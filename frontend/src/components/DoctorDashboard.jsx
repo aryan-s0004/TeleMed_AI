@@ -120,14 +120,15 @@ export default function DoctorDashboard({ user, setPage }) {
   useEffect(()=>{
     fetch(`${API}/api/appointments?user_id=${user.id}&role=doctor`)
       .then(r=>r.json()).then(data=>{
+        const appointments = Array.isArray(data) ? data : [];
         const today = new Date().toISOString().split("T")[0];
         setStats({
-          pending:   data.filter(a=>a.status==="pending").length,
-          confirmed: data.filter(a=>a.status==="confirmed").length,
-          total:     data.length,
-          today:     data.filter(a=>a.date===today).length,
+          pending:   appointments.filter(a=>a.status==="pending").length,
+          confirmed: appointments.filter(a=>a.status==="confirmed").length,
+          total:     appointments.length,
+          today:     appointments.filter(a=>a.date===today).length,
         });
-        setRecentApts(data.slice(0,5));
+        setRecentApts(appointments.slice(0,5));
       }).catch(()=>{});
   },[user.id]);
 
@@ -141,7 +142,7 @@ export default function DoctorDashboard({ user, setPage }) {
   const actions = [
     { icon:"📅", title:"Appointments",    desc:"View & manage patient bookings",    page:"appointments", color:"#3b82f6", light:"#dbeafe",  grad:"linear-gradient(90deg,#1e40af,#3b82f6)" },
     { icon:"📋", title:"Medical Records", desc:"Write prescriptions, add records",  page:"records",      color:"#059669", light:"#dcfce7",  grad:"linear-gradient(90deg,#059669,#34d399)" },
-    { icon:"📞", title:"Call History",    desc:"Past video consultation logs",      page:"callhistory",  color:"#7c3aed", light:"#ede9fe",  grad:"linear-gradient(90deg,#7c3aed,#a855f7)" },
+    { icon:"📞", title:"Call History",    desc:"Past video consultation logs",      page:"calls",  color:"#7c3aed", light:"#ede9fe",  grad:"linear-gradient(90deg,#7c3aed,#a855f7)" },
     { icon:"🔍", title:"Find Patient",    desc:"Search by unique patient ID",       page:"records",      color:"#dc2626", light:"#fee2e2",  grad:"linear-gradient(90deg,#dc2626,#ef4444)" },
     { icon:"📹", title:"Video Consult",   desc:"Start or join a video session",     page:"appointments", color:"#d97706", light:"#fef3c7",  grad:"linear-gradient(90deg,#d97706,#f59e0b)" },
     { icon:"📊", title:"Analytics",       desc:"Overview of patient activity",      page:"appointments", color:"#0891b2", light:"#cffafe",  grad:"linear-gradient(90deg,#0891b2,#06b6d4)" },
